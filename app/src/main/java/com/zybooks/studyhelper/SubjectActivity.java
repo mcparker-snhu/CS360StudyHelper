@@ -2,18 +2,18 @@ package com.zybooks.studyhelper;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.ActionMode;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.List;
 
 public class SubjectActivity extends AppCompatActivity
@@ -23,6 +23,10 @@ public class SubjectActivity extends AppCompatActivity
     private SubjectAdapter mSubjectAdapter;
     private RecyclerView mRecyclerView;
     private int[] mSubjectColors;
+
+    private Subject mSelectedSubject;
+    private int mSelectedSubjectPosition = RecyclerView.NO_POSITION;
+    private ActionMode mActionMode = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +56,7 @@ public class SubjectActivity extends AppCompatActivity
         if (subject.length() > 0) {
             Subject sub = new Subject(subject);
             if (mStudyDb.addSubject(sub)) {
-                // TODO: add subject to RecyclerView
+                mSubjectAdapter.addSubject(sub);
                 Toast.makeText(this, "Added " + subject, Toast.LENGTH_SHORT).show();
             } else {
                 String message = getResources().getString(R.string.subject_exists, subject);
@@ -124,6 +128,29 @@ public class SubjectActivity extends AppCompatActivity
         @Override
         public int getItemCount() {
             return mSubjectList.size();
+        }
+
+        public void addSubject(Subject subject){
+            // Add the new subject at the beginning of the list
+            mSubjectList.add(0, subject);
+
+            // Notify the adapter that item was added to the beginning of the list
+            notifyItemInserted(0);
+
+            // Scroll to the top
+            mRecyclerView.scrollToPosition(0);
+        }
+
+        public void removeSubject(Subject subject) {
+            // Find subject in the list
+            int index = mSubjectList.indexOf(subject);
+            if (index >= 0) {
+                // Remove the subject
+                mSubjectList.remove(index);
+
+                // Notify adapter of subject removal
+                notifyItemRemoved(index);
+            }
         }
     }
 }
